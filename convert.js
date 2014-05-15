@@ -2,6 +2,7 @@
 "use strict";
 
 var fs = require('fs'),
+  path = require('path'),
   xmldoc = require('xmldoc');
 
 if (process.argv.length != 3) {
@@ -9,12 +10,26 @@ if (process.argv.length != 3) {
   return;
 }
 
+/**
+ * Process the snippet into cson
+ */
 function processSnippet(snippetFile) {
   fs.readFile(snippetFile, function(err, data) {
+    if (err) { return; }
 
+    var snippetDir = path.basename(path.dirname(snippetFile)),
+      snippet = new xmldoc.XmlDocument(data),
+      thisSnippet = {};
+    snippet.eachChild(function(child) {
+      thisSnippet[child.name] = child.val;
+    });
+    console.log(thisSnippet);
   });
 }
 
+/**
+ * Scan the directory for snippets
+ */
 function scanDirectory(directory) {
   fs.readdir(directory, function(err, files) {
     if (!err) {
@@ -24,12 +39,13 @@ function scanDirectory(directory) {
 
         fs.stat(directory + '/' + filename, function(err, stats) {
           if (!err) {
+            // is this a directory? then keep scanning
             if (stats.isDirectory()) {
-              scanDirectory(directory + '/' + filename);
+              scanDirectory(path.join(directory, filename));
             }
+            // is this a snippet? then process it
             else if (/\.sublime-snippet$/.test(filename)) {
-              // console.log(directory + '/' + filename);
-              processSnippet(directory + '/' + filename);
+              processSnippet(path.join(directory, filename));
             }
           }
         });
