@@ -37,7 +37,7 @@ function scanDirectory(directory) {
         // skip "hidden" files
         if (/^\./.test(filename)) { return; }
 
-        fs.stat(directory + '/' + filename, function(err, stats) {
+        fs.stat(path.join(directory, filename), function(err, stats) {
           if (!err) {
             // is this a directory? then keep scanning
             if (stats.isDirectory()) {
